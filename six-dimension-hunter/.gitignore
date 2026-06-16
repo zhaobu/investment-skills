@@ -1,0 +1,27 @@
+# Six Dimension Hunter - .gitignore
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+
+# Node
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+.venv/
+
+# Token files (don't commit credentials)
+.neodata_token
+*.token
+*credentials*
