@@ -6,8 +6,9 @@ author: zhaobu
 last_updated: 2026-06-30
 tags: [A股, 板块选股, 加权矩阵, 长期持有]
 dependencies:
-  skills: [six-dimension-hunter, thesis-tracker, catalyst-calendar]
+  skills: [six-dimension-hunter, thesis-tracker]
   data: [westock-data, neodata-financial-search, WebSearch]
+  optional_skills: [catalyst-calendar]
 agent_created: true
 ---
 

@@ -5,7 +5,92 @@
 
 ---
 
-## [1.1.0] - 2026-06-30 · Skill 体系优化
+## [1.1.2] - 2026-06-30 · 跨 AI 工具兼容版本
+
+### 🆕 新功能
+
+#### 1. 多 AI 工具兼容性（响应 QoderWork 评估报告）
+
+**问题**：[QoderWork 评估报告](~/.qoderwork/workspace/mr0bq2gld9f3nz56/outputs/investment-skills-评估报告.md) 发现 v1.1 路径探测不完整，缺少 `experts/stock-partner-team` 路径。
+
+**变更**：
+- `bin/detect-data-paths.sh` 和 `bin/detect-data-paths.ps1` 重写
+- 新增 5+ 种路径探测（experts / skills-marketplace / QoderWork / Cursor / macOS App / develope 调试版）
+- 探测顺序优化：experts/stock-partner-team 路径优先
+- 环境变量 `WESTOCK_SCRIPT` / `NEODATA_SCRIPT` 可单独覆盖具体路径
+- 警告信息增强，给出手动覆盖提示
+
+**影响**：5 个 Skill 完整支持 WorkBuddy（4 种安装方式）/ QoderWork / Cursor / macOS App。
+
+#### 2. 离线模式（v1.1.2 新增）
+
+**问题**：用户在没有数据源的环境（如纯 Cursor 演示）不知道如何使用。
+
+**变更**：
+- `references/data-routing.md` 新增"离线模式"章节
+- 数据源不可用时自动降级到 L4 离线模式
+- 仅 `invester-dp` 完全可用，其他 4 个 Skill 仍可走流程但需用户输入数据
+
+**影响**：AI 编辑器无需数据源也能运行（基础路由能力）。
+
+#### 3. optional_skills 字段（v1.1.2 新增）
+
+**问题**：sector-stock-hunter 依赖 `catalyst-calendar`，thesis-tracker 依赖 `morning-note`，但本仓库不提供。
+
+**变更**：
+- frontmatter 新增 `optional_skills` 字段
+- `catalyst-calendar` 和 `morning-note` 标记为可选
+- 文档说明：这两个 Skill 已在 `equity-research` 插件中存在
+
+**影响**：依赖关系更清晰，用户知道哪些是必需的哪些是可选的。
+
+#### 4. 多 AI 工具兼容性矩阵
+
+新增章节说明各 AI 工具的兼容性：
+- WorkBuddy（4 种安装方式）
+- QoderWork
+- Cursor
+- macOS App
+- 纯 Chat（无数据源）
+
+---
+
+### 🔧 修复
+
+- `bin/detect-data-paths.sh`：路径探测顺序调整，`experts/stock-partner-team` 优先
+- `bin/detect-data-paths.ps1`：同 sh 版本
+- `references/data-routing.md`：完全重写，新增 v1.1.2 章节
+- `sector-stock-hunter/SKILL.md`：dependencies 改为 optional_skills
+- `thesis-tracker/SKILL.md`：dependencies 添加 optional_skills
+- `README.md`：标题改为"WorkBuddy / QoderWork / Cursor 通用"
+
+---
+
+### 📦 文件变更
+
+#### 修改
+- `bin/detect-data-paths.sh` - 路径探测逻辑重写
+- `bin/detect-data-paths.ps1` - 同上
+- `references/data-routing.md` - 完全重写（v1.1.2 多 AI 工具兼容）
+- `sector-stock-hunter/SKILL.md` - frontmatter dependencies 调整
+- `thesis-tracker/SKILL.md` - frontmatter dependencies 调整
+- `README.md` - 增加跨 AI 工具章节
+
+---
+
+### 🎯 解决的问题（QoderWork 评估报告）
+
+| 评估报告问题 | v1.1.2 修复 |
+|:---|:---|
+| 路径硬编码与用户实际不匹配 | ✅ 自动探测 7+ 种路径 |
+| neodata 与 westock-data 不在同一目录 | ✅ 分别探测，支持不同位置 |
+| 缺失 catalyst-calendar 未说明 | ✅ 标记为 optional |
+| 缺失 morning-note 未说明 | ✅ 标记为 optional |
+| 离线环境无法使用 | ✅ 离线模式 + 警告降级 |
+
+---
+
+## [1.1.1] - 2026-06-30 · 修复 v1.1 全面检查发现的问题
 
 ### 🔥 重大变更
 

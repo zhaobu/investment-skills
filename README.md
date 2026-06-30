@@ -1,13 +1,15 @@
-# 📊 投资决策 Skill 体系 · WorkBuddy
+# 投资决策 Skill 体系 · WorkBuddy / QoderWork / Cursor 通用
 
 > **一个完整的 A 股投资决策工具链：从发现机会、评估标的到管理持仓，全部覆盖。**
-> 当前版本：**v1.1.0**（2026-06-30）— 重大优化，详见 [CHANGELOG.md](CHANGELOG.md)
+> 当前版本：**v1.1.2**（2026-06-30）— 多 AI 工具兼容版本
+>
+> ✅ **WorkBuddy** | ✅ **QoderWork** | ✅ **Cursor** | ✅ **通用 AI 编辑器**
 
 ---
 
 ## 🎯 这是什么
 
-这是一套运行在 [WorkBuddy](https://workbuddy.app) / [Cursor](https://cursor.sh) 等 AI Editor 中的**投资决策 Skill** 集合。由 **5 个相互配合的 Skill** 组成，覆盖 A 股投资的完整闭环：
+这是一套运行在 [WorkBuddy](https://workbuddy.app) / [Cursor](https://cursor.sh) / **QoderWork** 等 AI 编辑器中的**投资决策 Skill** 集合。由 **5 个相互配合的 Skill** 组成，覆盖 A 股投资的完整闭环：
 
 ```
 市场热点扫描 → 产业链深挖 → 板块精选 → 六维评分 → 持仓管理 → 退出复盘
@@ -29,89 +31,98 @@
 
 ---
 
-## 🆕 v1.1 重大更新
+## 🆕 v1.1.2 跨 AI 工具兼容版本
 
-> 从 5 个 541-700 行的"巨石 SKILL.md"重构为模块化架构，全面升级。
+> 解决 QoderWork 评估报告 (`~/.qoderwork/.../investment-skills-评估报告.md`) 发现的 3 个核心问题。
 
-### 主要变化
-- ✅ **拆分 SKILL.md + references/**：单文件 541-700 行 → 入口 344-420 行 + references
-- ✅ **6 维评分单一来源**：消除三处重复定义，避免标准漂移
-- ✅ **跨平台数据源路径**：支持 macOS / Linux / Cursor
-- ✅ **invester-dp 整合 sector-stock-hunter**：完整覆盖 4 个 Skill（原版只覆盖 3 个）
-- ✅ **估值评分改连续函数**：避免边界突变
-- ✅ **现金流验证改 3 年滚动**：过滤非经常项美化
-- ✅ **反指信号机制**：避免情绪过热时接盘
-- ✅ **ATR 止损**：波动率自适应（原版 -15% 一刀切）
-- ✅ **监控指标核心/辅助权重**：核心假设不被辅助指标掩盖
-- ✅ **信号冲突处理矩阵**：核心假设被推翻 > 一切
-- ✅ **产业链模板扩展到 7 种**：新增政策驱动/周期资源/出海链
-- ✅ **全局图标规范**：跨 Skill 评级一致
+### 主要问题（QoderWork 评估报告）
 
-### 📁 新结构
-```
-investment-skills/
-├── README.md
-├── CHANGELOG.md                      # 🆕 版本更新日志
-├── references/                        # 🆕 全局共享引用
-│   ├── scoring-rubric.md             # 🆕 6 维评分标准（单一来源）
-│   ├── data-routing.md               # 🆕 数据源路径+降级方案
-│   └── icon-legend.md                # 🆕 全局图标规范
-├── bin/                              # 🆕 工具脚本
-│   ├── detect-data-paths.sh          # 🆕 macOS/Linux 路径探测
-│   └── detect-data-paths.ps1         # 🆕 Windows 路径探测
-├── hotspot-chain-hunter/
-│   ├── SKILL.md
-│   └── references/                   # 🆕 拆分出的详细内容
-├── sector-stock-hunter/
-│   ├── SKILL.md
-│   └── references/                   # 🆕 拆分出的详细内容
-├── six-dimension-hunter/
-│   ├── SKILL.md
-│   └── references/                   # 🆕 拆分出的详细内容
-├── thesis-tracker/
-│   ├── SKILL.md
-│   └── references/                   # 🆕 拆分出的详细内容
-└── invester-dp/
-    └── SKILL.md
-```
+| # | 问题 | 严重性 | 修复 |
+|:--|:---|:---:|:---:|
+| 1 | westock-data 路径硬编码，不匹配用户实际安装位置 | 🔴 严重 | ✅ v1.1.2 自动探测 |
+| 2 | neodata 路径与 westock-data 不在同一目录 | 🔴 严重 | ✅ v1.1.2 分别探测 |
+| 3 | 缺失 catalyst-calendar / morning-note 依赖未明确 | 🟡 中等 | ✅ v1.1.2 标记为 optional |
 
-详细变更见 [CHANGELOG.md](CHANGELOG.md)。
+### v1.1.2 兼容性矩阵
+
+| AI 工具 | 路径自动探测 | 5 个 Skill 可用性 |
+|:---|:---:|:---|
+| **WorkBuddy**（cb_teams_marketplace 安装） | ✅ | ✅ 完全可用 |
+| **WorkBuddy**（experts/stock-partner-team 安装） | ✅ | ✅ 完全可用（QoderWork 评估报告中的实际位置） |
+| **WorkBuddy**（skills-marketplace 散装） | ✅ | ✅ 完全可用 |
+| **QoderWork** | ✅ | ✅ 完全可用 |
+| **Cursor** | ✅ | ✅ 完全可用 |
+| **macOS WorkBuddy.app** | ✅ | ✅ 完全可用 |
+| **develope 调试版 WorkBuddy** | ✅ | ✅ 完全可用 |
+| **纯 Chat（无数据源）** | ❌ | ⚠️ 仅 invester-dp 可用 |
+
+### v1.1 自动探测的 7+ 种路径
+
+`bin/detect-data-paths.sh`（macOS/Linux/QoderWork/Cursor）按以下顺序自动探测：
+
+1. `WORKBUDDY_DATA_HOME` 环境变量
+2. `WESTOCK_SCRIPT` / `NEODATA_SCRIPT` 环境变量
+3. `~/.workbuddy/plugins/marketplaces/experts/plugins/stock-partner-team/skills`
+4. `~/.workbuddy/skills-marketplace/skills`
+5. `~/.workbuddy/plugins/marketplaces/cb_teams_marketplace/plugins/finance-data/skills`
+6. `E:/develope/WorkBuddy/resources/...`
+7. `/Applications/WorkBuddy.app/...`
+8. `~/.qoderwork/skills`
+9. `~/.cursor/skills`
 
 ---
 
 ## 🚀 快速上手
 
-### 前置条件
-
-这些 Skill 依赖以下金融数据源：
-
-- **neodata-financial-search**：自然语言金融数据搜索（A 股/港股/美股行情、财报、板块、宏观等）
-- **westock-data**：腾讯自选股结构化行情数据（实时行情、资金流向、机构评级、一致预期等）
-
-Skill 会自动按优先级（neodata → westock-data → WebSearch）路由数据请求。
-
-### 安装
+### 方式 1：WorkBuddy / QoderWork / Cursor 一键安装
 
 ```bash
 # 克隆到本地
 git clone https://github.com/zhaobu/investment-skills.git
 
-# 将 Skill 复制到 WorkBuddy 的 skills 目录
+# 复制 Skill 到目标目录
+# WorkBuddy:
 cp -r investment-skills/* ~/.workbuddy/skills/
+# QoderWork:
+cp -r investment-skills/* ~/.qoderwork/skills/
+# Cursor:
+cp -r investment-skills/* ~/.cursor/skills/
 
-# 加载数据源路径（v1.1 新增）
-source ~/.workbuddy/skills/bin/detect-data-paths.sh   # macOS/Linux
+# 加载数据源路径（v1.1.2 自动探测）
+source ~/.workbuddy/skills/bin/detect-data-paths.sh   # macOS/Linux/QoderWork
 # 或
 . ~/.workbuddy/skills/bin/detect-data-paths.ps1       # Windows
 ```
 
+### 方式 2：仅使用 invester-dp（不需要数据源）
+
+如果你的环境**没有**安装 westock-data / neodata（如纯 Cursor 演示）：
+
+```bash
+# 仍然可以安装，但只能完整使用 invester-dp
+# 其他 4 个 Skill 会显示"数据不可用"提示，但流程仍可走通
+```
+
+### 验证安装
+
+```bash
+# 加载数据源
+source bin/detect-data-paths.sh
+
+# 验证路径（应显示绿色 ✅）
+echo $WESTOCK_SCRIPT
+echo $NEODATA_SCRIPT
+
+# 测试数据工具
+node "$WESTOCK_SCRIPT" quote 000001    # 测试 westock（应返回平安银行数据）
+python "$NEODATA_SCRIPT" --query "贵州茅台主营构成"   # 测试 neodata
+```
+
 ### 一句话开始
 
-打开 AI Editor，直接输入：
+打开 AI 编辑器，直接输入：
 
 > **"我想买股票但不知道买什么"**
-
-系统会自动判断当前阶段，调用对应的 Skill 完成分析。
 
 或者试试这些：
 
@@ -167,7 +178,7 @@ Step 2: 驱动拆解 → 3 年可持续性
 Step 2.5: 板块放弃（无持续因素→直接放弃）
 Step 3: 排雷预筛选（6 类淘汰）
 Step 4: 6 维评分
-Step 5: 催化剂日历 ⚠️ catalyst-calendar 暂未提供
+Step 5: 催化剂日历 ⚠️ catalyst-calendar 是 optional skill
 Step 6: 加权矩阵终选（1-3 年持有期）
 Step 7: 投资逻辑记录
 ```
@@ -182,11 +193,6 @@ Step 7: 投资逻辑记录
 | 3 年净利 CAGR | 15% | 增长动力强度 |
 | 主题纯度 | 10% | 赛道纯粹度 |
 | 当前安全边际 | 5% | 回调空间 |
-
-**v1.1 风险惩罚项**（新增）：
-- 3 年 OCF/NI 持续 < 50% → 自动降一档
-- 应收账款增速 > 营收增速 3 年连续 → 总分 × 0.9
-- 高管/大股东减持 > 3% → 总分 × 0.95
 
 ---
 
@@ -203,19 +209,11 @@ Step 7: 投资逻辑记录
 | ⑤ 主题纯度 | ★★★ | 主题相关收入占比 |
 | ⑥ 现金流验证 | ★★★ | 3 年 OCF/NI 均值（v1.1 改 3 年滚动） |
 
-**v1.1 改进**：
-- 🎯 赛道差异化门槛（5 类）
-- 🔍 5 类预期差识别
-- 📐 同分去重规则
-- 🚨 **反指信号机制**（v1.1 新增）
-
 **评级**：
 - 🔴 ≥ 140：强烈推荐
 - 🟡 110-139：值得关注
 - 🟢 75-109：观察等待
 - ⛔ < 75：淘汰
-
-详细评分见 [`references/scoring-rubric.md`](references/scoring-rubric.md)
 
 ---
 
@@ -243,35 +241,53 @@ Step 6: 退出复盘总结
 
 ---
 
-### 🧭 invester-dp — 四步投资法决策导航（v1.1 重大更新）
+### 🧭 invester-dp — 四步投资法决策导航
 
-**v1.1 重大变更**：从"三步投资法"升级为"四步投资法"，**完整覆盖 4 个选股/持仓 Skill（原版只覆盖 3 个）**。
+**v1.1 重大变更**：从"三步投资法"升级为"四步投资法"，**完整覆盖 4 个选股/持仓 Skill**。
 
 **4 大场景入口**：
 - 🅰 还没买，不知道买什么 → hotspot-chain-hunter
-- 🅰 还没买，知道板块 → sector-stock-hunter → six-dimension-hunter（**v1.1 新增**）
+- 🅰 还没买，知道板块 → sector-stock-hunter → six-dimension-hunter
 - 🅱 已经买了 → thesis-tracker
 - 🅲 已退出 → thesis-tracker Step 6
 - 🅳 组合体检 → thesis-tracker 场景 3
 
-**4 步流程**：
+---
+
+## 🔧 跨 AI 工具兼容性（v1.1.2 重点）
+
+### 数据源路径自动探测
+
+`bin/detect-data-paths.sh`（macOS/Linux/QoderWork/Cursor）和 `bin/detect-data-paths.ps1`（Windows）会自动探测以下安装位置：
+
 ```
-[Step 1] 确定方向
-  ├─ 不知道方向 → hotspot-chain-hunter
-  └─ 已知方向（板块名）→ sector-stock-hunter
-          ↓
-[Step 2] 评估个股 → six-dimension-hunter
-          ↓
-[Step 3] 建仓 + 监控 → thesis-tracker
-          ↓
-[Step 4] 退出 + 复盘 → thesis-tracker Step 6
-          ↓
-     经验反哺 → 回到 Step 1
+优先级 1: 环境变量 WORKBUDDY_DATA_HOME / WESTOCK_SCRIPT / NEODATA_SCRIPT
+优先级 2: ~/.workbuddy/plugins/marketplaces/experts/plugins/stock-partner-team/skills
+优先级 3: ~/.workbuddy/skills-marketplace/skills
+优先级 4: ~/.workbuddy/plugins/marketplaces/cb_teams_marketplace/plugins/finance-data/skills
+优先级 5: /e/develope/WorkBuddy/resources/...
+优先级 6: /Applications/WorkBuddy.app/...
+优先级 7: ~/.qoderwork/skills
+优先级 8: ~/.cursor/skills
 ```
+
+### 离线模式（v1.1.2 新增）
+
+如果未检测到数据源，**仅 `invester-dp` 可完整使用**，其他 4 个 Skill 会：
+1. 在 Step 0 输出"离线模式"提示
+2. 数据位置标 `[数据不可用]`
+3. 仍可走流程但需用户手动提供数据
+
+### 缺失依赖 Skill 处理
+
+| Skill | 状态 | v1.1.2 处理 |
+|:---|:---|:---|
+| `catalyst-calendar` | 已在 `equity-research` 插件中存在，但本仓库不提供 | 标 `optional_skills`，Step 5 暂用简化时间表 |
+| `morning-note` | 同上 | 标 `optional_skills`，可用 `automation_update` 替代 |
 
 ---
 
-## 🎬 实战案例：宁德时代 365 天完整流程（v1.1 扩展）
+## 🎬 实战案例：宁德时代 365 天完整流程
 
 | 时间 | 动作 | Skill |
 |:---|:---|:---|
@@ -291,11 +307,12 @@ Step 6: 退出复盘总结
 
 | 组件 | 说明 |
 |:---|:---|
-| **框架** | WorkBuddy Skill (SKILL.md) 标准格式 |
-| **架构** | SKILL.md 入口 + references/ 模块化（v1.1） |
+| **框架** | WorkBuddy / QoderWork / Cursor Skill 通用 SKILL.md 格式 |
+| **架构** | SKILL.md 入口 + references/ 模块化 |
 | **数据层** | neodata-financial-search + westock-data |
 | **补充** | WebSearch（公开信息检索） |
 | **评分模型** | 六维捕手（单一来源 + 加权评分 + 淘汰制） |
+| **路径探测** | bin/detect-data-paths.{sh,ps1}（v1.1.2 跨平台多 AI 工具） |
 | **投资方法论** | 卖方分析师标准（摘要→分析→估值→风险→评级） |
 
 ---
@@ -307,7 +324,7 @@ Step 6: 退出复盘总结
 | [README.md](README.md) | 本文件 |
 | [CHANGELOG.md](CHANGELOG.md) | 版本更新日志 |
 | [references/scoring-rubric.md](references/scoring-rubric.md) | 6 维评分标准（单一来源） |
-| [references/data-routing.md](references/data-routing.md) | 数据源路径与降级方案 |
+| [references/data-routing.md](references/data-routing.md) | 数据源路径与降级方案（v1.1.2 多 AI 工具） |
 | [references/icon-legend.md](references/icon-legend.md) | 全局图标规范 |
 
 ---
@@ -338,6 +355,7 @@ Step 6: 退出复盘总结
 5. 创建一个 Pull Request
 
 > **修改评分标准前**：请先阅读 [references/scoring-rubric.md](references/scoring-rubric.md)，确保理解单一来源原则。
+> **修改数据源路径前**：请先运行 `bin/detect-data-paths.sh` 确认你的环境能被正确识别。
 
 ---
 

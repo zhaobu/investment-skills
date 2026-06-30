@@ -8,6 +8,8 @@ tags: [A股, 持仓, 复盘, 监控, 止损]
 dependencies:
   skills: [six-dimension-hunter, hotspot-chain-hunter, sector-stock-hunter]
   data: [westock-data, neodata-financial-search, WebSearch]
+  tools: [automation_update]
+  optional_skills: [morning-note]
 agent_created: true
 ---
 

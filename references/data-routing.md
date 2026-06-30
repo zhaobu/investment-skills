@@ -2,6 +2,8 @@
 
 > **本文件定义所有 Skill 调用的数据源路径、优先级与降级策略**。
 > 修改路径或优先级时，**只改这一处**。
+>
+> **v1.1.2 重大更新**：支持多种 AI 工具（WorkBuddy / QoderWork / Cursor）+ 自动路径探测
 
 ---
 
@@ -13,99 +15,145 @@
 | 2 | **westock-data** | 结构化行情/财务/一致预期/资金流 | → Westock-Tool 批量筛选 |
 | 3 | **Westock-Tool** | 批量筛选/排行/事件触发 | → WebSearch |
 | 4 | **WebSearch** | 公开信息补充（政策/新闻/研报） | → 标注 `[数据不可用]` |
+| 5 | **离线模式** | 无数据源时仅使用占位符 | 所有数据标 `[数据不可用]` |
 
 ---
 
-## 2. 跨平台路径（v1.1 新增）
+## 2. 跨 AI 工具路径（v1.1.2 重大更新）
 
-> **重要**：v1.0 中所有路径硬编码 Windows 绝对路径，无法在 macOS / Linux / Cursor 环境下运行。
-> v1.1 起统一使用 `${WORKBUDDY_DATA_HOME}` 变量。
+> **重要历史问题**：v1.0 硬编码 Windows 绝对路径，v1.1 已支持跨平台但路径不完整。
+> **v1.1.2 起**：自动探测 5 种常见的 WorkBuddy/QoderWork/Cursor 安装位置 + 环境变量覆盖。
 
 ### 2.1 路径解析规则
 
-**优先级**：
-1. 环境变量 `WORKBUDDY_DATA_HOME`（用户显式设置）
-2. 自动探测：尝试以下位置按顺序查找
-   - `${HOME}/.workbuddy/plugins/...`（macOS/Linux）
-   - `C:/Users/${USERNAME}/.workbuddy/plugins/...`（Windows）
-   - `E:/develope/WorkBuddy/resources/...`（Windows + develope 安装）
+**优先级**（探测顺序）：
+1. **环境变量**（用户显式设置）：
+   - `WORKBUDDY_DATA_HOME` - 数据根目录
+   - `WESTOCK_SCRIPT` - 单独指定 westock 路径
+   - `NEODATA_SCRIPT` - 单独指定 neodata 路径
+2. **自动探测**：尝试以下位置（按顺序）
 
-### 2.2 各平台推荐路径
+### 2.2 各 AI 工具的安装位置
 
-| 平台 | 路径 |
-|:---|:---|
-| Windows（默认） | `C:\Users\${USERNAME}\.workbuddy\plugins\marketplaces\cb_teams_marketplace\plugins\finance-data\skills\` |
-| Windows（dev 安装） | `E:\develope\WorkBuddy\resources\app.asar.unpacked\resources\builtin-skills\` |
-| macOS | `${HOME}/.workbuddy/plugins/marketplaces/cb_teams_marketplace/plugins/finance-data/skills/` |
-| Linux | `${HOME}/.workbuddy/plugins/marketplaces/cb_teams_marketplace/plugins/finance-data/skills/` |
+| AI 工具 | 平台 | 数据源路径 |
+|:---|:---|:---|
+| **WorkBuddy**（cb_teams_marketplace 安装） | Windows | `~/.workbuddy/plugins/marketplaces/cb_teams_marketplace/plugins/finance-data/skills/` |
+| **WorkBuddy**（skills-marketplace 安装） | Windows | `~/.workbuddy/skills-marketplace/skills/` |
+| **WorkBuddy**（experts/stock-partner-team 安装） | Windows | `~/.workbuddy/plugins/marketplaces/experts/plugins/stock-partner-team/skills/` |
+| **WorkBuddy** | macOS/Linux | `~/.workbuddy/plugins/marketplaces/cb_teams_marketplace/plugins/finance-data/skills/` |
+| **WorkBuddy**（develope 调试版） | Windows | `E:/develope/WorkBuddy/resources/app.asar.unpacked/resources/builtin-skills/` |
+| **QoderWork** | 跨平台 | `~/.qoderwork/skills/` |
+| **Cursor** | 跨平台 | `~/.cursor/skills/` |
+| **macOS 应用** | macOS | `/Applications/WorkBuddy.app/Contents/Resources/builtin-skills/` |
+
+> **注**：实际安装路径取决于用户怎么部署的插件。`bin/detect-data-paths.sh` 和 `bin/detect-data-paths.ps1` 已实现自动探测 5+ 种路径。
 
 ### 2.3 路径探测脚本
 
-**`bin/detect-data-paths.sh`**（macOS/Linux）：
+**`bin/detect-data-paths.sh`**（macOS/Linux/QoderWork/Cursor）：
 ```bash
 #!/usr/bin/env bash
-# 自动探测数据源路径
-if [ -n "$WORKBUDDY_DATA_HOME" ]; then
-  DATA_HOME="$WORKBUDDY_DATA_HOME"
-elif [ -d "${HOME}/.workbuddy/plugins" ]; then
-  DATA_HOME="${HOME}/.workbuddy/plugins/marketplaces/cb_teams_marketplace/plugins/finance-data/skills"
-elif [ -d "/Applications/WorkBuddy.app/Contents/Resources/builtin-skills" ]; then
-  DATA_HOME="/Applications/WorkBuddy.app/Contents/Resources/builtin-skills"
-else
-  echo "❌ 未找到 WorkBuddy 数据目录，请设置 WORKBUDDY_DATA_HOME 环境变量" >&2
-  exit 1
-fi
-export WESTOCK_SCRIPT="${DATA_HOME}/westock-data/scripts/index.js"
-export NEODATA_SCRIPT="${DATA_HOME}/neodata-financial-search/scripts/query.py"
-export WETOOL="${DATA_HOME}/westock-data/scripts/westock-tool"
-echo "✅ WESTOCK_SCRIPT=${WESTOCK_SCRIPT}"
-echo "✅ NEODATA_SCRIPT=${NEODATA_SCRIPT}"
+# 自动探测数据源路径（多 AI 工具兼容）
+# 探测顺序：
+#   1. 环境变量 WORKBUDDY_DATA_HOME / WESTOCK_SCRIPT / NEODATA_SCRIPT
+#   2. ~/.workbuddy/plugins/marketplaces/cb_teams_marketplace/...
+#   3. ~/.workbuddy/skills-marketplace/skills
+#   4. ~/.workbuddy/plugins/marketplaces/experts/plugins/stock-partner-team/skills
+#   5. /e/develope/WorkBuddy/...（开发版）
+#   6. /Applications/WorkBuddy.app/...（macOS）
+#   7. ~/.qoderwork/skills（QoderWork）
+#   8. ~/.cursor/skills（Cursor）
 ```
 
 **`bin/detect-data-paths.ps1`**（Windows）：
 ```powershell
-# 自动探测数据源路径
-if ($env:WORKBUDDY_DATA_HOME) {
-  $DATA_HOME = $env:WORKBUDDY_DATA_HOME
-} elseif (Test-Path "$HOME/.workbuddy/plugins") {
-  $DATA_HOME = "$HOME/.workbuddy/plugins/marketplaces/cb_teams_marketplace/plugins/finance-data/skills"
-} elseif (Test-Path "E:\develope\WorkBuddy\resources\app.asar.unpacked\resources\builtin-skills") {
-  $DATA_HOME = "E:\develope\WorkBuddy\resources\app.asar.unpacked\resources\builtin-skills"
-} else {
-  Write-Error "❌ 未找到 WorkBuddy 数据目录，请设置 WORKBUDDY_DATA_HOME 环境变量"
-  exit 1
-}
-$env:WESTOCK_SCRIPT = "$DATA_HOME/westock-data/scripts/index.js"
-$env:NEODATA_SCRIPT = "$DATA_HOME/neodata-financial-search/scripts/query.py"
-$env:WETOOL = "$DATA_HOME/westock-data/scripts/westock-tool"
-Write-Host "✅ WESTOCK_SCRIPT=$env:WESTOCK_SCRIPT"
+# 同样支持上述所有路径 + Windows 路径格式
 ```
 
 ### 2.4 使用方式
 
 ```bash
-# 加载路径
-source bin/detect-data-paths.sh        # macOS/Linux
-. bin/detect-data-paths.ps1            # Windows PowerShell
+# macOS / Linux / QoderWork / Cursor
+source bin/detect-data-paths.sh
+
+# Windows PowerShell
+. bin/detect-data-paths.ps1
 
 # 然后调用
 node "$WESTOCK_SCRIPT" quote <代码>
 "$PYTHON" "$NEODATA_SCRIPT" --query "<查询>"
 ```
 
+### 2.5 路径探测失败的解决方案
+
+如果自动探测失败，按以下顺序排查：
+
+**方案 A：手动设置环境变量**（推荐）
+```bash
+# Linux/macOS
+export WORKBUDDY_DATA_HOME=/path/to/finance-data/skills
+source bin/detect-data-paths.sh
+
+# Windows PowerShell
+$env:WORKBUDDY_DATA_HOME = "C:\path\to\finance-data\skills"
+. bin/detect-data-paths.ps1
+```
+
+**方案 B：手动设置具体路径**
+```bash
+# 跳过探测，直接指定
+export WESTOCK_SCRIPT=/custom/path/to/westock-data/scripts/index.js
+export NEODATA_SCRIPT=/custom/path/to/query.py
+```
+
+**方案 C：仅使用 invester-dp**（不需要联网数据）
+- 5 个 Skill 中 invester-dp 是纯路由 Skill，不调用任何外部数据
+- 其他 4 个 Skill 会显示"数据不可用"提示，但流程仍可走通
+
 ---
 
-## 3. 降级方案
+## 3. 离线模式（v1.1.2 新增）
 
-### 3.1 三级降级模型
+> **场景**：在没有安装 westock-data / neodata 的环境（如纯 Cursor / QoderWork 初次使用）
+> **策略**：所有数据请求返回 `[数据不可用]`，并跳过依赖数据的步骤。
+
+### 3.1 离线模式触发条件
+
+- `bin/detect-data-paths.sh` 执行后输出"未找到 WorkBuddy 数据目录"
+- 或显式设置 `OFFLINE_MODE=1` 环境变量
+
+### 3.2 离线模式行为
+
+| Skill | 在线行为 | 离线行为 |
+|:---|:---|:---|
+| `invester-dp` | 正常工作 | ✅ 正常工作（无数据需求） |
+| `six-dimension-hunter` | 拉取 6 维数据 | ⚠️ 只能基于用户提供的输入评分 |
+| `hotspot-chain-hunter` | 扫描热点 | ⚠️ 只能用 WebSearch 补充 + 用户输入 |
+| `sector-stock-hunter` | 板块数据 | ⚠️ 只能用 WebSearch 补充 + 用户输入 |
+| `thesis-tracker` | 监控指标 | ✅ 用户提供数据正常工作 |
+
+### 3.3 离线模式说明模板
+
+报告中应明确标注：
+```markdown
+⚠️ 当前为离线模式（未检测到 westock-data/neodata）
+所有数据需用户手动提供或通过 WebSearch 补充
+```
+
+---
+
+## 4. 降级方案
+
+### 4.1 三级降级模型
 
 | 等级 | 条件 | 处理 |
 |:---:|:---|:---|
 | **L1 数据齐全** | 所有需要数据可获取 | 正常输出，标注来源 |
 | **L2 部分缺失** | 1-2 个关键数据缺失 | 用代理指标替代，标注 `[估算]` |
 | **L3 关键全缺** | 核心数据无法获取 | 仅基于现有信息做粗评，明确告知用户 |
+| **L4 离线模式** | 无任何数据源 | 仅 WebSearch + 用户输入 |
 
-### 3.2 代理指标映射（缺数据时使用）
+### 4.2 代理指标映射（缺数据时使用）
 
 | 缺失数据 | 代理指标 | 标注 |
 |:---|:---|:---|
@@ -116,7 +164,7 @@ node "$WESTOCK_SCRIPT" quote <代码>
 | 市占率 | 用"营收/行业总规模"估算 | `[估算: 行业总规模推算]` |
 | 机构评级 | 用 Westock 5 家券商平均替代 | `[估算: 5 家平均]` |
 
-### 3.3 关键数据全缺的处理原则
+### 4.3 关键数据全缺的处理原则
 
 当以下核心数据**全部缺失**时，应**明确告知用户**数据不足，建议补充数据后重试：
 
@@ -125,7 +173,7 @@ node "$WESTOCK_SCRIPT" quote <代码>
 
 ---
 
-## 4. 已知数据源限制
+## 5. 已知数据源限制
 
 | 限制 | 影响 | 替代方案 |
 |:---|:---|:---|
@@ -135,10 +183,11 @@ node "$WESTOCK_SCRIPT" quote <代码>
 | `consensus` 全为 0 | 无法做估值评分 | 标 `[缺失]`，用 PE_TTM 替代 |
 | neodata 偶发 `data not found` | 单次查询失败 | 重试 2-3 次，更换关键词 |
 | westock 网络超时 | 数据获取失败 | 降级到 WebSearch |
+| **neodata 缺 token** | 所有自然语言查询失败 | 调用 `connect_cloud_service` 激活 |
 
 ---
 
-## 5. 数据新鲜度规则
+## 6. 数据新鲜度规则
 
 | 数据类型 | 有效期限 | 超过期限标注 |
 |:---|:---:|:---|
@@ -150,17 +199,17 @@ node "$WESTOCK_SCRIPT" quote <代码>
 
 ---
 
-## 6. 路由决策树
+## 7. 路由决策树
 
 ```
 数据需求
   │
-  ├─ 需要自然语言查询（"XX行业研报"）→ neodata
+  ├─ 需要自然语言查询（"XX行业研报"）→ neodata（如不可用 → WebSearch）
   │
   ├─ 需要结构化数据（PE/财报/一致预期）
   │    │
-  │    ├─ 批量筛选 → Westock-Tool
-  │    └─ 单标查询 → westock-data
+  │    ├─ 批量筛选 → Westock-Tool（如不可用 → WebSearch）
+  │    └─ 单标查询 → westock-data（如不可用 → WebSearch）
   │
   └─ 需要公开信息补充（新闻/政策）→ WebSearch
 ```
@@ -180,3 +229,27 @@ python "$NEODATA_SCRIPT" --query "<公司名>主营业务收入构成"
 # Step 5: 补充信息（如果上述仍未覆盖）
 WebSearch "<公司名> 2026 行业地位 研报"
 ```
+
+---
+
+## 8. 多 AI 工具兼容性矩阵
+
+| AI 工具 | invester-dp | 6 维评分 | 热点扫描 | 板块精选 | 持仓跟踪 |
+|:---|:---:|:---:|:---:|:---:|:---:|
+| **WorkBuddy** | ✅ | ✅（需 westock+neodata） | ✅ | ✅ | ✅ |
+| **QoderWork** | ✅ | ✅（路径需探测） | ✅ | ✅ | ✅ |
+| **Cursor** | ✅ | ✅（需手动设置路径） | ✅ | ✅ | ✅ |
+| **纯 Chat（无工具）** | ✅ | ⚠️（需用户提供数据） | ⚠️ | ⚠️ | ✅ |
+
+> **QoderWork 特别说明**：在 QoderWork 中使用这 5 个 Skill 时，路径探测脚本会自动扫描 `~/.qoderwork/skills/` 目录。如果数据源在 WorkBuddy 的 experts 插件目录（这是 QoderWork 评估报告中的实际位置），`detect-data-paths.sh` 也会自动识别。
+
+---
+
+## 9. 缺失依赖 Skill 说明
+
+| Skill | 用途 | v1.1.2 状态 |
+|:---|:---|:---|
+| `catalyst-calendar` | 催化剂日历构建 | ⚠️ 仍未在仓库提供。sector-stock-hunter Step 5 暂用简化时间表 |
+| `morning-note` | 每日盘前信号检查 | ⚠️ 仍未在仓库提供。thesis-tracker 用 automation_update 替代 |
+
+> **好消息**：`catalyst-calendar` 和 `morning-note` 已在 `~/.workbuddy/plugins/marketplaces/experts/plugins/equity-research/skills/` 中存在（标准 WorkBuddy 部署）。如果用户已安装 equity-research 插件，可直接使用完整版。
