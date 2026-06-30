@@ -226,11 +226,11 @@ hotspot-chain-hunter/
 - `thesis-tracker/references/lessons-learned.md`
 
 #### 修改文件
-- `hotspot-chain-hunter/SKILL.md` - 591 → 270 行
-- `six-dimension-hunter/SKILL.md` - 552 → 240 行
-- `thesis-tracker/SKILL.md` - 588 → 290 行
-- `sector-stock-hunter/SKILL.md` - 201 → 320 行
-- `invester-dp/SKILL.md` - 288 → 300 行（覆盖 4 个 Skill）
+- `hotspot-chain-hunter/SKILL.md` - 591 → 364 行
+- `six-dimension-hunter/SKILL.md` - 552 → 344 行
+- `thesis-tracker/SKILL.md` - 588 → 365 行
+- `sector-stock-hunter/SKILL.md` - 201 → 420 行
+- `invester-dp/SKILL.md` - 288 → 391 行（覆盖 4 个选股/持仓 Skill）
 - `README.md` - 更新版本号和说明
 
 ---

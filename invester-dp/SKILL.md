@@ -7,6 +7,7 @@ last_updated: 2026-06-30
 tags: [决策, 导航, 路由]
 dependencies:
   skills: [hotspot-chain-hunter, sector-stock-hunter, six-dimension-hunter, thesis-tracker]
+  data: []
 agent_created: true
 ---
 
@@ -156,7 +157,7 @@ agent_created: true
   │
   └─ 用 thesis-tracker Step 6
      输入："帮我做宁德时代的退出复盘"
-     输出：退出复盘报告 + 经验教训 + lessons_learned 更新
+     输出：退出复盘报告 + 经验教训 + lessons-learned.md 更新
 ```
 
 ---
@@ -216,7 +217,7 @@ agent_created: true
        └── "我想复盘学习" ─────────────────────────────┐
            │                                             │
            └── thesis-tracker Step 6                     │
-               输出 lessons-learned.md
+               输出 ../thesis-tracker/references/lessons-learned.md
 ```
 
 ---
@@ -258,7 +259,7 @@ agent_created: true
 | 时间 | 用户状态 | 用哪个 Skill | 输入 | 输出 |
 |:---|:---|:---|:---|:---|
 | 目标价到 | "宁德涨到 550 了" | thesis-tracker Step 4 | "检查清仓信号" | 触发目标价到位 → 清仓 |
-| 复盘 | "卖完了，学点什么？" | thesis-tracker Step 6 | "帮我做退出复盘" | 退出报告 + 经验教训 + lessons-learned 更新 |
+| 复盘 | "卖完了，学点什么？" | thesis-tracker Step 6 | "帮我做退出复盘" | 退出报告 + 经验教训 + lessons-learned.md 更新 |
 
 ---
 

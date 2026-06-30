@@ -84,7 +84,7 @@
 
 ## 经验沉淀
 
-将可迁移的经验更新到 `references/lessons-learned.md`：
+将可迁移的经验更新到 `lessons-learned.md`：
 ```
 
 ## 经验沉淀记录

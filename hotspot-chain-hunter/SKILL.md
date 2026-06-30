@@ -6,7 +6,7 @@ author: zhaobu
 last_updated: 2026-06-30
 tags: [A股, 热点, 产业链, 选股, 短线]
 dependencies:
-  skills: [six-dimension-hunter, sector-stock-hunter]
+  skills: [six-dimension-hunter]
   data: [westock-data, neodata-financial-search, WebSearch]
 agent_created: true
 ---
@@ -19,8 +19,8 @@ agent_created: true
 而是：**先跟市场热钱走，确定当前资金聚集的板块方向；再对该方向做全套产业链深挖和 6 维筛选，选出热钱方向里基本面最硬、估值最合理的标的**。
 
 > **v1.1 更新（2026-06-30）**
-> - SKILL.md 瘦身至 ~250 行，评分细则、数据路由、报告模板等迁出至 references/
-> - 评分标准引用 `references/scoring-rubric.md`（消除与 six-dimension-hunter 的重复定义）
+> - SKILL.md 瘦身至 ~360 行（原 591 行），评分细则、数据路由、报告模板等迁出至 references/
+> - 评分标准引用 `../../references/scoring-rubric.md`（消除与 six-dimension-hunter 的重复定义）
 > - 新增反指信号机制（情绪过热自动扣分）
 > - 新增 E/F/G 三类产业链模板（政策驱动/周期资源/出海链）
 > - 数据源路径改用 `bin/detect-data-paths.sh` 跨平台脚本
@@ -234,7 +234,7 @@ Step 6: 输出完整报告（含潜伏池+触发条件+仓位建议）
 
 **特别调整**：
 - 🔥 高热度方向，维度④从原始得分扣减 2 分作为估值过热惩罚（最低 2 分）
-- 反指信号触发时（Step 1.6），按 `scoring-rubric.md` 第 8 节扣分
+- 反指信号触发时（Step 1.6），按 [`../../references/scoring-rubric.md`](../../references/scoring-rubric.md) "反指信号"节扣分
 
 ### 4.3 综合评级
 

@@ -19,7 +19,7 @@ agent_created: true
 **核心原则**：研究结论要经得起 3 年后回看。
 
 > **v1.1 更新（2026-06-30）**
-> - 评分标准完全迁出至 `references/scoring-rubric.md`（单一来源）
+> - 评分标准完全迁出至 `../references/scoring-rubric.md`（单一来源）
 > - 估值评分改连续函数（避免边界突变）
 > - 现金流验证改 3 年滚动平均
 > - 新增反指信号机制
@@ -46,7 +46,7 @@ agent_created: true
 Step 1: 理解用户需求 → 确定筛选范围（全市场/指定板块/指定标的）
 Step 2: 排雷预筛选 → 自动淘汰主题相关性不足/估值泡沫/概念炒作标的
 Step 3: 数据采集 → 批量拉取 6 维评分所需数据
-Step 4: 6 维逐项评分 → 按框架打分（详见 references/scoring-rubric.md）
+Step 4: 6 维逐项评分 → 按框架打分（详见 ../references/scoring-rubric.md）
 Step 5: 交叉验证 → 财务数据/一致预期/机构评级/资金面
 Step 6: 输出报告 → 按标准格式输出每只标的的分析报告
 ```
@@ -114,13 +114,13 @@ westock-data report <代码> --limit 5
 westock-data rating <代码>
 ```
 
-**字段说明**详见 `references/data-routing.md`。
+**字段说明**详见 `../references/data-routing.md`。
 
 ---
 
 ## Step 4: 6 维逐项评分
 
-> **🔴 重要：本步骤的评分细则已迁出至 `references/scoring-rubric.md`，本节只做引用 + 数据获取指引。**
+> **🔴 重要：本步骤的评分细则已迁出至 `../references/scoring-rubric.md`，本节只做引用 + 数据获取指引。**
 
 | 维度 | 权重 | 通过线 | 淘汰线 | 关键数据源 |
 |:---|:---:|:---:|:---:|:---|
@@ -131,7 +131,7 @@ westock-data rating <代码>
 | ⑤ 主题纯度 | ×3 | ≥ 7 | < 4 | 主营构成 + 客户结构 |
 | ⑥ 现金流验证 | ×3 | ≥ 7 | < 4 | 3 年滚动 OCF/NI |
 
-**完整评分细则**：[references/scoring-rubric.md](references/scoring-rubric.md)
+**完整评分细则**：[../references/scoring-rubric.md](../references/scoring-rubric.md)
 
 **同分去重规则**（总分差距 < 10 时）：
 
@@ -269,7 +269,7 @@ westock-data rating <代码>
 - 所有数据必须标注来源（`[quote]` / `[consensus]` / `[finance]` / `[neodata]` / `[report]`）
 - 无数据时标注 `[缺失]` 或 `[估算]`，绝不编造
 - 数据超过 90 天标注 `[STALE]`
-- 缺数据时按照 `references/data-routing.md` 的代理指标处理
+- 缺数据时按照 `../references/data-routing.md` 的代理指标处理
 
 ### 排雷清单（必须执行）
 - 每次分析前先执行排雷预筛选（Step 2）
@@ -327,7 +327,7 @@ westock-tool filter --expression "intersect([PE_TTM < 30, ROETTM > 15])" --limit
 
 ### 已知数据源限制
 
-详见 `references/data-routing.md` 第 4 节。
+详见 `../references/data-routing.md` 第 4 节。
 
 ---
 
@@ -335,9 +335,9 @@ westock-tool filter --expression "intersect([PE_TTM < 30, ROETTM > 15])" --limit
 
 | 文件 | 内容 |
 |:---|:---|
-| [references/scoring-rubric.md](references/scoring-rubric.md) | **六维评分标准（单一来源）** |
-| [references/data-routing.md](references/data-routing.md) | 数据源路径与降级方案 |
-| [references/icon-legend.md](../references/icon-legend.md) | 全局图标规范 |
+| [../references/scoring-rubric.md](../references/scoring-rubric.md) | **六维评分标准（单一来源）** |
+| [../references/data-routing.md](../references/data-routing.md) | 数据源路径与降级方案 |
+| [../references/icon-legend.md](../references/icon-legend.md) | 全局图标规范 |
 
 ---
 

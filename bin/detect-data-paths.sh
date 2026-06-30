@@ -2,6 +2,8 @@
 # detect-data-paths.sh
 # 自动探测 WorkBuddy 数据源路径（macOS / Linux）
 # 用法: source bin/detect-data-paths.sh
+#
+# 首次使用需添加可执行权限：chmod +x bin/detect-data-paths.sh
 
 set -e
 
