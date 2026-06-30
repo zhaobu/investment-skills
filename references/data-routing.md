@@ -3,7 +3,9 @@
 > **本文件定义所有 Skill 调用的数据源路径、优先级与降级策略**。
 > 修改路径或优先级时，**只改这一处**。
 >
-> **v1.1.2 重大更新**：支持多种 AI 工具（WorkBuddy / QoderWork / Cursor）+ 自动路径探测
+> **v1.1.3 重大更新**：跨目录探测（westock + neodata 可在不同安装路径）+ Windows Python 路径修复 + OFFLINE_MODE 标志
+>
+> **v1.1.2 历史更新**：支持多种 AI 工具（WorkBuddy / QoderWork / Cursor）
 
 ---
 
@@ -24,14 +26,26 @@
 > **重要历史问题**：v1.0 硬编码 Windows 绝对路径，v1.1 已支持跨平台但路径不完整。
 > **v1.1.2 起**：自动探测 5 种常见的 WorkBuddy/QoderWork/Cursor 安装位置 + 环境变量覆盖。
 
-### 2.1 路径解析规则
+### 2.1 路径解析规则（v1.1.3 重大修复：跨目录组合）
+
+**v1.1.2 问题**：v1.1.2 假设所有数据源都在同一个 `DATA_HOME` 目录下，但实际用户的安装情况是：
+- `westock-data` 在 `experts/stock-partner-team/skills/`
+- `neodata-financial-search` 在 `skills-marketplace/skills/`
+- v1.1.2 探测到第一个目录就停，导致 neodata 找不到
+
+**v1.1.3 修复**：`bin/detect-data-paths.sh` / `.ps1` 现在**独立探测**每个数据源：
+- `WESTOCK_SCRIPT` 来自哪个目录都行
+- `NEODATA_SCRIPT` 来自哪个目录都行
+- `WETOOL` 独立探测
+- `PYTHON` 自动探测 Windows 路径
 
 **优先级**（探测顺序）：
 1. **环境变量**（用户显式设置）：
    - `WORKBUDDY_DATA_HOME` - 数据根目录
    - `WESTOCK_SCRIPT` - 单独指定 westock 路径
    - `NEODATA_SCRIPT` - 单独指定 neodata 路径
-2. **自动探测**：尝试以下位置（按顺序）
+   - `PYTHON` - 单独指定 Python 解释器
+2. **自动探测**：尝试以下位置（按顺序），独立探测每个数据源
 
 ### 2.2 各 AI 工具的安装位置
 

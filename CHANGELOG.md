@@ -5,6 +5,54 @@
 
 ---
 
+## [1.1.3] - 2026-06-30 · 跨目录数据源探测 + 关键修复
+
+### 🎯 触发原因
+对 v1.1.2 在用户实际环境下进行实地测试，发现 3 个严重问题让 v1.1.2 几乎不可用。
+
+### 🆕 主要变更
+
+#### 1. 路径探测脚本完全重写（最关键）
+- **v1.1.2 缺陷**：假设所有数据源在同一个 `DATA_HOME` 目录，但实测：
+  - `westock-data` 在 `experts/stock-partner-team/skills/`
+  - `neodata-financial-search` 在 `skills-marketplace/skills/`（不同目录！）
+  - v1.1.2 探测到第一个目录就停，导致 neodata 找不到
+- **v1.1.3 修复**：`bin/detect-data-paths.sh` / `.ps1` 改为**独立探测**每个数据源
+
+#### 2. Windows Python 路径修复
+- **v1.1.2 缺陷**：`PYTHON=python3`，但 Windows 默认无 `python3` 命令
+- **v1.1.3 修复**：自动探测 `~/.workbuddy/binaries/python/versions/3.13.12/python.exe`、`python3`、`python`、`py.exe`
+
+#### 3. OFFLINE_MODE 标志
+- **v1.1.2 缺陷**：无数据源时所有 Skill 静默失败
+- **v1.1.3 修复**：`OFFLINE_MODE=1` 显式告知；invester-dp 仍可用，其他 4 个 Skill 走降级
+
+#### 4. WETOOL 路径修正
+- **v1.1.2 缺陷**：`westock-data/scripts/westock-tool` 实际不存在
+- **v1.1.3 修复**：探测 `westock-tool/scripts/index.js` 或 `westock-data/scripts/westock-tool.js`
+
+#### 5. sector-stock-hunter 内容优化
+- **加权矩阵示例计算错误修复**：8.45/8.15/7.90（原标 8.35/8.10/7.85）
+- **排雷条件 #2 逻辑歧义修复**：`(PE_fwd>150 或 PE_TTM>200) 且 净利增速<50%`
+- **新增板块类型差异化**：5 种类型（成长/周期/防御/消费/金融）PE 阈值调整表
+- **次选条件修正**：必须 6 维 ≥ 110，否则不强行输出
+
+#### 6. data-routing.md 更新
+- 顶部标注 v1.1.3 重大更新
+- 第 2.1 节增加"v1.1.3 重大修复：跨目录组合"说明
+
+### ✅ 验证
+```bash
+$ bash bin/detect-data-paths.sh
+✅ WorkBuddy 数据源已就位（v1.1.3 跨目录探测）
+   WESTOCK_SCRIPT  = /c/Users/liwei/.workbuddy/.../stock-partner-team/skills/westock-data/scripts/index.js
+   NEODATA_SCRIPT  = /c/Users/liwei/.workbuddy/skills-marketplace/skills/neodata-financial-search/scripts/query.py
+   WETOOL          = /c/Users/liwei/.workbuddy/.../stock-partner-team/skills/westock-tool/scripts/index.js
+   PYTHON          = /c/Users/liwei/.workbuddy/binaries/python/versions/3.13.12/python
+```
+
+---
+
 ## [1.1.2] - 2026-06-30 · 跨 AI 工具兼容版本
 
 ### 🆕 新功能

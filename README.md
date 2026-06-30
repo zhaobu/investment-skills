@@ -1,7 +1,7 @@
 # 投资决策 Skill 体系 · WorkBuddy / QoderWork / Cursor 通用
 
 > **一个完整的 A 股投资决策工具链：从发现机会、评估标的到管理持仓，全部覆盖。**
-> 当前版本：**v1.1.2**（2026-06-30）— 多 AI 工具兼容版本
+> 当前版本：**v1.1.3**（2026-06-30）— 跨目录数据源探测 + 离线模式标志
 >
 > ✅ **WorkBuddy** | ✅ **QoderWork** | ✅ **Cursor** | ✅ **通用 AI 编辑器**
 
@@ -16,6 +16,42 @@
 ```
 
 **核心原则**：不追涨杀跌，不做情绪化交易。研究结论要经得起 3 年后回看。
+
+---
+
+## 🆕 v1.1.3 重要修复（基于真实环境测试）
+
+> 实地测试发现 v1.1.2 在用户实际环境（westock 与 neodata 不在同一目录）下失效。v1.1.3 全部修复。
+
+### v1.1.3 核心变更
+
+| # | 问题 | 严重性 | 修复 |
+|:--|:---|:---:|:---|
+| 1 | 路径探测假设所有数据源在同一个 `DATA_HOME`，但实测 westock 和 neodata 在不同目录 | 🔴 | ✅ 改为独立探测每个数据源 |
+| 2 | 脚本默认 `PYTHON=python3`，但 Windows 上 `python3` 命令不存在 | 🔴 | ✅ 自动探测 WorkBuddy 自带 Python / `python.exe` |
+| 3 | `WETOOL` 路径错误（指向 `westock-data/scripts/westock-tool` 但实际是独立目录） | 🟡 | ✅ 多路径探测 |
+| 4 | 离线环境（无 westock/neodata）下所有 Skill 都会走完整流程但都失败 | 🟡 | ✅ 新增 `OFFLINE_MODE` 标志，未找到数据源时显式告知 |
+| 5 | sector-stock-hunter Step 6 加权矩阵示例计算错误（8.45→8.35 标错） | 🟢 | ✅ 修正所有 3 个示例分数 |
+| 6 | sector-stock-hunter Step 3 排雷条件 #2 逻辑歧义（"或/且"未括号化） | 🟡 | ✅ 改用括弧 `(PE_fwd>150 或 PE_TTM>200) 且 净利增速<50%` |
+| 7 | sector-stock-hunter 缺乏板块类型差异化处理（周期股/防御型用同一 PE 阈值是错的） | 🟡 | ✅ 新增 5 种板块类型的 PE/CAGR 调整表 |
+| 8 | sector-stock-hunter "次选"在 6 维 < 110 分时仍强行输出 | 🟢 | ✅ 改为"次选 6 维必须 ≥ 110，否则不输出" |
+
+### v1.1.3 实地验证
+
+```bash
+$ bash bin/detect-data-paths.sh
+✅ WorkBuddy 数据源已就位（v1.1.3 跨目录探测）
+
+   数据脚本：
+     WESTOCK_SCRIPT  = /c/Users/liwei/.workbuddy/plugins/marketplaces/experts/plugins/stock-partner-team/skills/westock-data/scripts/index.js
+     NEODATA_SCRIPT  = /c/Users/liwei/.workbuddy/skills-marketplace/skills/neodata-financial-search/scripts/query.py
+     WETOOL          = /c/Users/liwei/.workbuddy/plugins/marketplaces/experts/plugins/stock-partner-team/skills/westock-tool/scripts/index.js
+
+   运行环境：
+     PYTHON          = /c/Users/liwei/.workbuddy/binaries/python/versions/3.13.12/python
+```
+
+> ✅ westock 来自 `stock-partner-team` 目录，neodata 来自 `skills-marketplace` 目录，**被正确组合**
 
 ---
 
