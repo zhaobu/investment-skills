@@ -1,0 +1,201 @@
+---
+name: sector-stock-hunter
+description: 板块猎手·从热门板块中精选1-3年持有标的的7步标准化流程。输入板块名称，自动完成热度评估、驱动拆解、排雷筛选、六维评分、催化剂日历、加权矩阵终选、投资逻辑记录的全流程分析，最终输出1-2只值得长期持有的标的。触发词：板块选股、板块精选、从XX板块选股、板块筛股、行业选股、XX板块买什么、板块内选标的、sector stock pick、板块深度挖掘。
+agent_created: true
+---
+
+# 板块猎手 · sector-stock-hunter
+
+## 概述
+
+从任意A股板块中，通过7步标准化流程精选出最适合1-3年持有的1-2只标的。核心原则：**研究结论要经得起3年后回看**。
+
+**依赖 Skills**：`six-dimension-hunter`（六维评分）、`thesis-tracker`（投资逻辑记录）、`catalyst-calendar`（催化剂日历）
+
+**数据源**：`westock-data`（行情+财务+一致预期）、`neodata-financial-search`（板块数据+主营构成+研报）
+
+---
+
+## 7步标准流程
+
+### Step 0: 数据准备
+
+1. 用 `westock-data search "[板块名称]" --type sector` 找到板块代码
+2. 用 `westock-data sector <板块代码>` 获取成分股列表
+3. 用 `neodata-financial-search` 查询板块基本面数据（估值、行情、资金）：
+   ```bash
+   python scripts/query.py --query "[板块名称]板块 行情 估值 PE 涨跌幅 资金流向 成分股" --data-type api
+   ```
+4. 用 `neodata` 查询板块相关最新研报：
+   ```bash
+   python scripts/query.py --query "[板块名称]行业 2026年 券商研报 投资策略 供需 前景" --data-type api
+   ```
+
+### Step 1: 板块热度初判
+
+从行情数据中提取板块的 `涨跌幅`、`PE分位`、`主力资金净流向`。
+
+| 信号 | 判断 | 操作 |
+|:---|:---|:---|
+| YTD > 50% + 主力持续净流出 | 高位出货风险 | 标注"等回调"，但流程继续 |
+| YTD < 30% + 资金流入 | 蓄力阶段 | 标注"重点关注" |
+| PE分位 5年 > 90% | 估值泡沫警戒 | 标注但不禁入（高增长可消化） |
+| 板块PE > 300 + YTD > 100% | 🔴 极高风险 | 强制提醒，建议等30%+回调 |
+
+> ⚠️ 即使板块热度高，只要驱动因素可持续，流程照常继续。估值问题在 Step 6 加权矩阵中通过"当前安全边际"维度处理。
+
+### Step 2: 上涨驱动拆解
+
+从研报和资讯中提取板块上涨的3-5个核心驱动因素，对每个因素做3年可持续性判断：
+
+| 分类 | 判断标准 | 示例 |
+|:---|:---|:---|
+| ✅ **可持续** | 锚定产业趋势（AI算力/国产替代/老龄化/碳中和/消费升级） | 半导体材料→全球晶圆厂扩产108座（SEMI数据） |
+| ⚠️ **不确定** | 政策单次刺激（补贴/关税调整），效果可持续性存疑 | 光伏补贴退坡前的抢装 |
+| ❌ **短期** | 消息炒作（传闻/游资驱动/纯概念），无基本面支撑 | 某题材概念一周游 |
+
+**关键执行规则**：
+- 如果 **无法找到至少1个✅持续因素** → 直接进入 Step 2.5"板块放弃"流程，不继续后续步骤
+- 每个因素必须标注数据来源（研报/SEMI/WSTS/交易所公告等）
+
+### Step 2.5: 板块放弃流程
+
+当板块无可持续驱动因素时，输出：
+
+```markdown
+## ⛔ 板块放弃：[板块名称]
+
+| 驱动因素 | 可持续性 | 理由 |
+|:---|:---|:---|
+| [因素1] | ❌ 短期 | [原因] |
+| [因素2] | ⚠️ 不确定 | [原因] |
+
+**结论**：该板块当前上涨缺乏3年期产业趋势支撑，无1-3年持有标的。建议放弃，等待基本面催化剂出现后重新评估。
+```
+
+**如果到达 Step 2.5，整个流程终止，不执行 Step 3-7。**
+
+### Step 3: 排雷预筛选
+
+对板块内每只成分股逐一检查。触发以下任一条 → **直接淘汰**：
+
+| # | 淘汰条件 | 检查方法 |
+|:---|:---|:---|
+| ① | 主题相关性不足（核心业务与板块主题无关，或收入占比<10%） | neodata 查主营构成 |
+| ② | 估值泡沫（PE_fwd > 150 或 PE_TTM > 200 且 净利增速<50%） | westock-data quote + consensus |
+| ③ | 炒作过度（YTD > 150% 且 净利增速 < 50%） | westock-data quote |
+| ④ | 纸面利润（经营现金流/净利润 < 50%，连续2年） | westock-data finance xjll + lrb |
+| ⑤ | 概念太早期（核心产品未量产/无收入验证） | neodata + 研报 |
+| ⑥ | 持续亏损（连续2年归母净利为负 + 无明确扭亏预期） | westock-data finance lrb |
+
+- 淘汰原因必须在报告中明确标注
+- 如果所有成分股都被淘汰 → 输出"排雷后零幸存"，流程终止
+
+### Step 4: 六维深度评分
+
+对通过排雷的每只标的，使用 `six-dimension-hunter` 框架逐只评分。
+
+**数据获取清单**（每只标的必须拉取）：
+```bash
+# 行情 + PE
+node westock-data quote <代码>
+
+# 一致预期（2026E/2027E/2028E）
+node westock-data consensus <代码>
+
+# 三大报表（lrb=利润表, xjll=现金流量表）
+node westock-data finance <代码> --type lrb --num 4
+node westock-data finance <代码> --type xjll --num 4
+```
+
+**评分标准**（遵循 six-dimension-hunter 框架）：
+- ① 稀缺性（权重4）：全球/国内能做的有几家？
+- ② 龙头地位（权重4）：市占率？是否第一？
+- ③ 3-5年确定性（权重4）：3年净利CAGR？下游需求刚性？
+- ④ 估值未透支（权重4）：PE_fwd + 2028E PE + YTD涨幅
+- ⑤ 主题纯度（权重3）：板块相关业务收入占比？
+- ⑥ 现金流验证（权重3）：经营现金流/净利润
+
+**综合评级**：🔴≥140 / 🟡110-139 / 🟢75-109 / ⛔<75
+
+### Step 5: 催化剂日历
+
+对≥110分的标的，构建未来3-6个月关键事件：
+
+| 时间窗口 | 事件 | 影响标的 | 影响级别 | 验证指标 |
+|:---|:---|:---|:---|:---|
+
+### Step 6: 最终精选推荐
+
+对所有≥140分标的，用1-3年持有期加权矩阵重新排序：
+
+| 维度 | 权重 | 评分逻辑 |
+|:---|:---:|:---|
+| 2028E PE | 30% | 越低越好（<30=10分, 30-40=8分, 40-55=6分, 55-70=5分, >70=3分） |
+| 现金流质量 | 20% | 经营现金流/净利（>120%=10分, 80-120%=7分, 50-80%=4分, <50%=1分） |
+| 护城河/稀缺性 | 20% | 复用维度①②得分（取较高值） |
+| 3年净利CAGR | 15% | 增速越高越好（>40%=10分, 30-40%=8分, 20-30%=6分, <20%=4分） |
+| 主题纯度 | 10% | 复用维度⑤得分 |
+| 当前安全边际 | 5% | YTD越低越好+溢价率越小越好 |
+
+**输出**：
+- 🥇 首选：标的 + 合理买入区间 + 分批建仓方案
+- 🥈 次选（如有）
+
+### Step 7: 投资逻辑记录
+
+对首选标的，使用 `thesis-tracker` 框架创建投资逻辑卡：
+
+- 核心论点（1-2句 Thesis Statement）
+- 五大支柱（含验证节点）
+- 止损条件
+- 催化剂追踪表
+- 当前操作建议（Buy/Hold/Sell + 目标价 + 买入区间）
+
+---
+
+## 操作规则
+
+1. **数据可追溯**：每个数字标注来源 `[quote]/[consensus]/[finance]/[neodata]/[研报]`
+2. **绝不编造**：缺数据标注 `[MISSING]` 或 `[待补充]`
+3. **排雷优先**：淘汰原因必须明确标注
+4. **估值假设透明**：关键假设（PE倍数/增速/折现率）必须显式列出
+5. **最终输出**：1份.md格式的完整报告
+
+---
+
+## 依赖与脚本路径
+
+### westock-data
+```
+WESTOCK_SCRIPT="E:\develope\WorkBuddy\resources\app.asar.unpacked\resources\builtin-skills\westock-data\scripts\index.js"
+命令:
+  node "$WESTOCK_SCRIPT" search "<板块名称>" --type sector
+  node "$WESTOCK_SCRIPT" sector <板块代码>
+  node "$WESTOCK_SCRIPT" quote <股票代码>
+  node "$WESTOCK_SCRIPT" consensus <股票代码>
+  node "$WESTOCK_SCRIPT" finance <股票代码> --type lrb --num 4
+  node "$WESTOCK_SCRIPT" finance <股票代码> --type xjll --num 4
+```
+
+### neodata-financial-search
+```
+NEODATA_SCRIPT="E:\develope\WorkBuddy\resources\app.asar.unpacked\resources\builtin-skills\neodata-financial-search\scripts\query.py"
+PYTHON="C:\Users\liwei\.workbuddy\binaries\python\versions\3.13.12\python.exe"
+命令:
+  "$PYTHON" "$NEODATA_SCRIPT" --query "<查询内容>" --data-type api
+```
+
+### 依赖 Skills
+- `six-dimension-hunter`：六维评分框架（Step 4）
+- `thesis-tracker`：投资逻辑记录（Step 7）
+- `catalyst-calendar`：催化剂日历构建（Step 5）
+
+---
+
+## 边界与原则
+
+- **不构成投资建议**：所有报告末尾必须标注
+- **3年回看信条**：所有结论以"3年后回看是否站得住"为检验标准
+- **不轻率评级**：Buy/Sell 基于数据深度，非投机性判断
+- **拒绝内幕信息**：涉及未公开信息时明确拒绝
