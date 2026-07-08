@@ -5,6 +5,28 @@
 
 ---
 
+## [1.2.0] - 2026-07-08 · 新增 multibagger-hunter（翻倍猎手）
+
+### 🎯 触发原因
+投资闭环在"六维评分通过"之后，缺少一个专门评估单标的 1–3 年翻倍/多倍潜力的工具。新增 `multibagger-hunter`，把"业绩×估值"双验证、所需 CAGR 可信上限、自身历史 PE 锚、情景概率约束、退出/逻辑跟踪纪律固化成可复用 Skill。
+
+### 🆕 主要变更
+- **新增 Skill `multibagger-hunter`（翻倍猎手）**：单股翻倍/多倍潜力评估器
+  - 统一口径：后复权价 + 远期 PE + 年份对齐 + 持有期 N=1/2/3（"翻倍"必须绑定时间维度）
+  - 硬排雷（一票否决）+ regime 判定 + 量化验证核心卡口
+  - 多倍潜力强制拆成"业绩贡献 × 估值贡献"，禁止把纯估值泡沫路径判为高确定性
+  - 所需 EPS CAGR 反算 + 可信上限（防"虚翻"），自身历史 PE 75 分位作为二级锚
+  - Base/Bull/Bear 情景分析，概率和=100% 且锚定催化剂，Bear≥15%
+  - 输出"数据锚点"强制块，保证算式可复现
+  - 建仓后联动 `thesis-tracker` 做退出/逻辑破坏跟踪
+- **README 更新**：Skill 一览 + Skill 详解新增 multibagger-hunter，体系由 5 个升级为 6 个 Skill
+
+### 📦 依赖
+- `skills`: six-dimension-hunter, thesis-tracker, comps-valuation, catalyst-calendar
+- `data`: neodata-financial-search, westock-data, tdx-connector, WebSearch
+
+---
+
 ## [1.1.3] - 2026-06-30 · 跨目录数据源探测 + 关键修复
 
 ### 🎯 触发原因

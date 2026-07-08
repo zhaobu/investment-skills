@@ -1,7 +1,7 @@
 # 投资决策 Skill 体系 · WorkBuddy / QoderWork / Cursor 通用
 
 > **一个完整的 A 股投资决策工具链：从发现机会、评估标的到管理持仓，全部覆盖。**
-> 当前版本：**v1.1.3**（2026-06-30）— 跨目录数据源探测 + 离线模式标志
+> 当前版本：**v1.2.0**（2026-07-08）— 新增 multibagger-hunter（翻倍猎手）
 >
 > ✅ **WorkBuddy** | ✅ **QoderWork** | ✅ **Cursor** | ✅ **通用 AI 编辑器**
 
@@ -9,10 +9,10 @@
 
 ## 🎯 这是什么
 
-这是一套运行在 [WorkBuddy](https://workbuddy.app) / [Cursor](https://cursor.sh) / **QoderWork** 等 AI 编辑器中的**投资决策 Skill** 集合。由 **5 个相互配合的 Skill** 组成，覆盖 A 股投资的完整闭环：
+这是一套运行在 [WorkBuddy](https://workbuddy.app) / [Cursor](https://cursor.sh) / **QoderWork** 等 AI 编辑器中的**投资决策 Skill** 集合。由 **6 个相互配合的 Skill** 组成，覆盖 A 股投资的完整闭环：
 
 ```
-市场热点扫描 → 产业链深挖 → 板块精选 → 六维评分 → 持仓管理 → 退出复盘
+市场热点扫描 → 产业链深挖 → 板块精选 → 六维评分 → 翻倍潜力评估 → 持仓管理 → 退出复盘
 ```
 
 **核心原则**：不追涨杀跌，不做情绪化交易。研究结论要经得起 3 年后回看。
@@ -62,6 +62,7 @@ $ bash bin/detect-data-paths.sh
 | 🔥 **hotspot-chain-hunter** | 热点产业链深挖选股器 | "市场在炒什么？怎么选股？" |
 | 🎯 **sector-stock-hunter** | 板块精选 7 步法选股器 | "这个板块里买哪只？" |
 | ⭐ **six-dimension-hunter** | 六维捕手评分筛选器 | "这家公司值不值得买？" |
+| 🚀 **multibagger-hunter** | 单股翻倍/多倍潜力评估器 | "它能不能翻倍？靠什么涨？" |
 | 📋 **thesis-tracker** | 投资逻辑跟踪器 | "我买的持仓现在怎么处理？" |
 | 🧭 **invester-dp** | 四步投资法决策导航 | "我现在该用哪个 Skill？" |
 
@@ -81,7 +82,7 @@ $ bash bin/detect-data-paths.sh
 
 ### v1.1.2 兼容性矩阵
 
-| AI 工具 | 路径自动探测 | 5 个 Skill 可用性 |
+| AI 工具 | 路径自动探测 | 6 个 Skill 可用性 |
 |:---|:---:|:---|
 | **WorkBuddy**（cb_teams_marketplace 安装） | ✅ | ✅ 完全可用 |
 | **WorkBuddy**（experts/stock-partner-team 安装） | ✅ | ✅ 完全可用（QoderWork 评估报告中的实际位置） |
@@ -168,6 +169,7 @@ python "$NEODATA_SCRIPT" --query "贵州茅台主营构成"   # 测试 neodata
 | 看好某个板块但不会选股 | "用 sector-stock-hunter 从储能板块选股" |
 | 看好某个板块但不会拆解产业链 | "帮我分析储能板块的产业链，每个环节选最好的" |
 | 已经有目标公司 | "帮我 6 维评分一下宁德时代" |
+| 想知道它能不能翻倍 | "用 multibagger-hunter 评估宁德时代翻倍潜力" |
 | 已经买了股票 | "帮我为宁德时代建持仓档案" |
 | 持仓跌了 | "帮我检查宁德时代的持仓信号" |
 | 想清仓了 | "帮我做宁德时代的退出复盘" |
@@ -253,6 +255,40 @@ Step 7: 投资逻辑记录
 
 ---
 
+### 🚀 multibagger-hunter — 单股翻倍/多倍潜力评估器
+
+**解决什么问题**：你已有一个目标公司（来自六维捕手或自选），但想知道"它到底能不能翻倍？靠什么涨？多久涨？"。这个 Skill 把"翻倍"这个模糊愿望拆成**业绩贡献 × 估值贡献**两个可量化因子，反推所需 EPS CAGR，并做硬排雷 + 情景概率 + 置信分级。
+
+**核心方法论**：
+```
+翻倍拆解：目标价 P1 = P0 × (PE1/PE0) × (EPS1/EPS0)
+         → 估值贡献 = PE1/PE0，业绩贡献 = EPS1/EPS0
+         → 反推所需 EPS CAGR = (EPS1/EPS0)^(1/N) - 1（N = 持有期 1/2/3 年）
+
+三道闸门：
+  Step 0  硬排雷（一票否决：财务造假/ST/流动性枯竭/治理缺陷）
+  Step 1  量化锚点（P0/PE0/EPS0 全用"后复权 + 远期口径 + 年份对齐"）
+  Step 2  翻倍路径（业绩 vs 估值，哪个是主驱动？证据是否可信？）
+  Step 6  情景概率（Bull/Base/Bear 之和=100%，Bear≥15%，锚定催化剂）
+```
+
+**置信分级（⚠️ 仅表示个股自身确定性，非仓位建议）**：
+- 🟢 **T1 高确定性**：业绩+CAGR 双锚定、估值有安全边际、催化剂可排期
+- 🟡 **T2 中等**：主驱动成立但需 1-2 个验证节点
+- 🔴 **T3 投机**：纯估值修复或主题博弈，无业绩支撑
+
+**统一估值约定**（避免横向不可比）：
+- 价格一律用**后复权**，PE 一律用**远期 PE**，年份严格对齐（2026E/2027E/2028E）
+- 锚定 PE 用"自身 5 年 PE 75 分位"作次级参考，不盲信行业均值
+- 回购/注销导致的股本缩减带来的 EPS 增厚，计入业绩贡献证据
+
+**衔接关系**：
+- 上游：`six-dimension-hunter`（先过六维筛，再谈翻倍）
+- 下游：`thesis-tracker`（翻倍逻辑一旦成立，建持仓档案持续跟踪兑现）
+- 依赖：`comps-valuation`（同业 PE 锚）、`catalyst-calendar`（催化剂排期）
+
+---
+
 ### 📋 thesis-tracker — 投资逻辑跟踪器
 
 **7 步流程**：
@@ -279,11 +315,12 @@ Step 6: 退出复盘总结
 
 ### 🧭 invester-dp — 四步投资法决策导航
 
-**v1.1 重大变更**：从"三步投资法"升级为"四步投资法"，**完整覆盖 4 个选股/持仓 Skill**。
+**v1.1 重大变更**：从"三步投资法"升级为"四步投资法"，**完整覆盖 5 个选股/持仓 Skill**。
 
 **4 大场景入口**：
 - 🅰 还没买，不知道买什么 → hotspot-chain-hunter
 - 🅰 还没买，知道板块 → sector-stock-hunter → six-dimension-hunter
+- 🅰 还没买，已锁定标的想看翻倍空间 → six-dimension-hunter → multibagger-hunter
 - 🅱 已经买了 → thesis-tracker
 - 🅲 已退出 → thesis-tracker Step 6
 - 🅳 组合体检 → thesis-tracker 场景 3
@@ -309,7 +346,7 @@ Step 6: 退出复盘总结
 
 ### 离线模式（v1.1.2 新增）
 
-如果未检测到数据源，**仅 `invester-dp` 可完整使用**，其他 4 个 Skill 会：
+如果未检测到数据源，**仅 `invester-dp` 可完整使用**，其他 5 个 Skill 会：
 1. 在 Step 0 输出"离线模式"提示
 2. 数据位置标 `[数据不可用]`
 3. 仍可走流程但需用户手动提供数据
@@ -330,6 +367,7 @@ Step 6: 退出复盘总结
 | Day 1 早上 | 扫热点 → 发现储能方向 | hotspot-chain-hunter |
 | Day 1 中午 | 板块精选 → 选出宁德时代等核心标的 | sector-stock-hunter |
 | Day 1 下午 | 评宁德时代 → 162/190 强烈推荐 | six-dimension-hunter |
+| Day 1 下午 | 评估翻倍潜力 → 拆解业绩×估值、反推所需 CAGR | multibagger-hunter |
 | Day 1 晚上 | 建持仓档案 + 设监控指标 | thesis-tracker |
 | Day 30 | 月复盘：储能装机 +45%，继续持有 | thesis-tracker |
 | Day 90 | 季报超预期 → 触发加仓信号 | thesis-tracker |
